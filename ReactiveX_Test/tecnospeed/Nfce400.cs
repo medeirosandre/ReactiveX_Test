@@ -1,5 +1,6 @@
 ﻿using NFCeX;
 using System;
+using System.Reactive.Linq;
 
 namespace ReactiveX_Test.tecnospeed
 {
@@ -60,21 +61,23 @@ namespace ReactiveX_Test.tecnospeed
             spdNFCe.QtdeCopias = 1;
         }
 
-        public string consultarNFCe(string chave_nfce)
+        public IObservable<string> consultarNFCe(string chave_nfce)
         {
-            string result = string.Empty;
+            //string result = string.Empty;
 
             this.initNFCe();
-            try
-            {
-                result = spdNFCe.ConsultarNF(chave_nfce);
-            }
-            catch(Exception e)
-            {
-                result = e.Message;
-            }
+            return Observable.Return<string>(spdNFCe.ConsultarNF(chave_nfce));
 
-            return result;
+            //try
+            //{
+            //    result = spdNFCe.ConsultarNF(chave_nfce);
+            //}
+            //catch(Exception e)
+            //{
+            //    result = e.Message;
+            //}
+
+            //return result;
         }
     }
 }

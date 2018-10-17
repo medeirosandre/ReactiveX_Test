@@ -1,5 +1,6 @@
 ﻿using ReactiveX_Test.tecnospeed;
 using System;
+using System.Reactive.Linq;
 using System.Windows.Forms;
 
 namespace ReactiveX_Test.reactive
@@ -24,7 +25,11 @@ namespace ReactiveX_Test.reactive
         {
             string chave_consulta = this.textBox1.Text;
 
-            this.setTextBox2Text(this.nfce400.consultarNFCe(chave_consulta));
+            this.nfce400.consultarNFCe(chave_consulta)
+                .Subscribe(
+                    (string it) => { this.setTextBox2Text(it); },
+                    (Exception ex) => { this.setTextBox2Text(ex.Message); }
+                );
         }
     }
 }
