@@ -1,6 +1,8 @@
 ﻿using ReactiveX_Test.tecnospeed;
 using System;
+using System.Reactive.Concurrency;
 using System.Reactive.Linq;
+using System.Threading;
 using System.Windows.Forms;
 
 namespace ReactiveX_Test.reactive
@@ -9,6 +11,8 @@ namespace ReactiveX_Test.reactive
     {
         NFCe400 nfce400;
 
+        string text_box_2_text;
+
         public ViewForm()
         {
             this.nfce400 = new NFCe400();
@@ -16,9 +20,24 @@ namespace ReactiveX_Test.reactive
             InitializeComponent();
         }
 
-        private void setTextBox2Text(string text)
+        delegate void StringArgReturningVoidDelegate(string text);
+
+        private void updateTextBox2Text(string text)
         {
-            this.textBox2.Text = text;
+            if(this.textBox2.InvokeRequired)
+            {
+                StringArgReturningVoidDelegate d = new StringArgReturningVoidDelegate(updateTextBox2Text);
+                this.Invoke(d, new object[] { text });
+            }
+            else
+            {
+                this.textBox2.Text = text;
+            }
+        }
+
+        private void setTextBox2Text()
+        {
+            this.updateTextBox2Text(text_box_2_text);
         }
 
         private void button1_Click(object sender, EventArgs e)
@@ -26,9 +45,18 @@ namespace ReactiveX_Test.reactive
             string chave_consulta = this.textBox1.Text;
 
             this.nfce400.consultarNFCe(chave_consulta)
+                .SubscribeOn(Scheduler.Default)
                 .Subscribe(
-                    (string it) => { this.setTextBox2Text(it); },
-                    (Exception ex) => { this.setTextBox2Text(ex.Message); }
+                    (string it) => {
+                        text_box_2_text = it;
+                        var new_thread = new Thread(new ThreadStart(this.setTextBox2Text));
+                        new_thread.Start();
+                    },
+                    (Exception ex) => {
+                        text_box_2_text = ex.Message;
+                        var new_thread = new Thread(new ThreadStart(this.setTextBox2Text));
+                        new_thread.Start();
+                    }
                 );
         }
     }
